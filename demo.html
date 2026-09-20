@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dükkan Defterim</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1e222b; --line:#2a2f3a;
+    --text:#eef1f6; --muted:#9aa3b2; --accent:#22c55e; --accent2:#16a34a;
+    --red:#ef4444; --amber:#f59e0b; --blue:#3b82f6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{padding:18px 16px 10px;text-align:center;border-bottom:1px solid var(--line);}
+  header h1{margin:0;font-size:20px;}
+  header p{margin:4px 0 0;color:var(--muted);font-size:13px;}
+  nav{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;}
+  nav button{flex:1;min-width:88px;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;}
+  nav button.active{background:var(--accent);border-color:var(--accent);color:#04240f;font-weight:700;}
+  main{padding:14px;max-width:520px;margin:0 auto;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .row{display:flex;gap:8px;}
+  .row > *{flex:1;}
+  input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:14px;margin-bottom:8px;}
+  button.primary{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#04240f;font-weight:700;font-size:14px;cursor:pointer;}
+  button.ghost{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--text);font-size:12px;cursor:pointer;}
+  .list-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--line);}
+  .list-item:last-child{border-bottom:none;}
+  .name{font-weight:600;}
+  .sub{color:var(--muted);font-size:12px;}
+  .amt-pos{color:var(--red);font-weight:700;} /* borcu var (bize borçlu) */
+  .amt-neg{color:var(--accent);font-weight:700;}
+  .amt-zero{color:var(--muted);font-weight:600;}
+  .badge{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--card2);color:var(--muted);}
+  .stat{display:flex;gap:10px;}
+  .stat .box{flex:1;background:var(--card2);border-radius:12px;padding:12px;text-align:center;}
+  .stat .box .v{font-size:18px;font-weight:800;}
+  .stat .box .l{font-size:11px;color:var(--muted);margin-top:2px;}
+  .empty{color:var(--muted);text-align:center;padding:24px 10px;font-size:13px;}
+  .actions{display:flex;gap:6px;margin-top:8px;}
+  .low{color:var(--amber);font-weight:700;}
+  .whatsapp{background:#1fae56;color:#fff;border:none;}
+  footer{text-align:center;color:var(--muted);font-size:11px;padding:20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="baslik">🧾 Dükkan Defterim</h1>
+  <p>Müşterin, alacağın, kazancın, malın — tek yerde</p>
+</header>
+
+<nav>
+  <button data-tab="musteriler" class="active">Müşteriler</button>
+  <button data-tab="alacak">Alacak/Verecek</button>
+  <button data-tab="kazanc">Bugünkü Kazanç</button>
+  <button data-tab="stok">Depodaki Mallar</button>
+  <button data-tab="ayarlar">Ayarlar</button>
+</nav>
+
+<main>
+
+  <!-- MÜŞTERİLER -->
+  <section class="panel active" id="musteriler">
+    <div class="card">
+      <div class="row">
+        <input id="musteriAdi" placeholder="Müşteri adı">
+        <input id="musteriTel" placeholder="Telefon (opsiyonel)">
+      </div>
+      <button class="primary" onclick="musteriEkle()">+ Müşteri Ekle</button>
+    </div>
+    <div class="card" id="musteriListe"></div>
+  </section>
+
+  <!-- ALACAK / VERECEK -->
+  <section class="panel" id="alacak">
+    <div class="card">
+      <div class="stat">
+        <div class="box"><div class="v" id="toplamAlacak">0 ₺</div><div class="l">Toplam Alacağım</div></div>
+        <div class="box"><div class="v" id="toplamVerecek">0 ₺</div><div class="l">Toplam Verecek</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <select id="hesapMusteri"></select>
+      <div class="row">
+        <input id="hesapTutar" type="number" placeholder="Tutar (₺)">
+        <select id="hesapYon">
+          <option value="borc">Müşteri borçlandı (+)</option>
+          <option value="odeme">Müşteri ödedi (-)</option>
+        </select>
+      </div>
+      <input id="hesapNot" placeholder="Not (opsiyonel, örn: kumaş aldı)">
+      <button class="primary" onclick="hesapHareketEkle()">Kaydet</button>
+    </div>
+    <div class="card" id="alacakListe"></div>
+  </section>
+
+  <!-- BUGÜNKÜ KAZANÇ -->
+  <section class="panel" id="kazanc">
+    <div class="card">
+      <div class="stat">
+        <div class="box"><div class="v" id="gunToplam">0 ₺</div><div class="l">Bugün Toplam</div></div>
+        <div class="box"><div class="v" id="gunNakit">0 ₺</div><div class="l">Nakit</div></div>
+        <div class="box"><div class="v" id="gunKart">0 ₺</div><div class="l">Kart</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <input id="satisTutar" type="number" placeholder="Satış tutarı (₺)">
+        <select id="satisTip">
+          <option value="nakit">Nakit</option>
+          <option value="kart">Kart</option>
+        </select>
+      </div>
+      <button class="primary" onclick="satisEkle()">+ Satış Ekle</button>
+    </div>
+    <div class="card" id="satisListe"></div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">📊 Özet</div>
+      <div class="stat">
+        <div class="box"><div class="v" id="haftaToplam">0 ₺</div><div class="l">Bu Hafta</div></div>
+        <div class="box"><div class="v" id="ayToplam">0 ₺</div><div class="l">Bu Ay</div></div>
+      </div>
+      <div id="enCokBorclu" style="margin-top:10px;"></div>
+    </div>
+  </section>
+
+  <!-- AYARLAR -->
+  <section class="panel" id="ayarlar">
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">🏪 Dükkan Adı</div>
+      <input id="dukkanAdiInput" placeholder="Örn: Yılmaz Tekstil">
+      <button class="primary" onclick="dukkanAdiKaydet()">Kaydet</button>
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:6px;">🔒 Verileriniz güvende</div>
+      <div class="sub">Tüm bilgiler (müşteri, borç, satış, stok) sadece bu telefonda/bilgisayarda saklanır. İnternete, bize ya da başka hiçbir yere gönderilmez. İnternet olmadan da çalışır.</div>
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">📤 Yedek Al</div>
+      <div class="sub" style="margin-bottom:10px;">Telefon değişirse veya kaybolursa diye tüm verilerini tek dosyaya indir.</div>
+      <button class="primary" onclick="yedekIndir()">Yedek Dosyası İndir</button>
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">📥 Yedek Yükle</div>
+      <div class="sub" style="margin-bottom:10px;">Daha önce indirdiğin yedek dosyasından tüm verilerini geri getir.</div>
+      <input type="file" id="yedekDosya" accept="application/json" onchange="yedekYukle(event)">
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;color:var(--red);">🗑 Tüm Verileri Sıfırla</div>
+      <div class="sub" style="margin-bottom:10px;">Dikkat: geri alınamaz. Önce yedek almanı öneririz.</div>
+      <button class="ghost" style="width:100%;border-color:var(--red);color:var(--red);" onclick="tumVeriSifirla()">Sıfırla</button>
+    </div>
+  </section>
+
+  <!-- STOK -->
+  <section class="panel" id="stok">
+    <div class="card">
+      <div class="row">
+        <input id="stokAd" placeholder="Ürün adı">
+        <input id="stokAdet" type="number" placeholder="Adet">
+      </div>
+      <input id="stokEsik" type="number" placeholder="Azaldı uyarısı (örn: 5)">
+      <button class="primary" onclick="stokEkle()">+ Mal Ekle</button>
+    </div>
+    <div class="card" id="stokListe"></div>
+  </section>
+
+</main>
+
+<footer>Dükkan Defterim — internet gerekmez, veriler bu cihazda saklanır.</footer>
+
+<script>
+const DB_KEY = 'dukkanDefteriDB_v1';
+function db(){ return JSON.parse(localStorage.getItem(DB_KEY) || '{"musteriler":[],"hareketler":[],"satislar":[],"stok":[]}'); }
+function save(d){ localStorage.setItem(DB_KEY, JSON.stringify(d)); render(); }
+
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+  };
+});
+
+function musteriEkle(){
+  const ad = document.getElementById('musteriAdi').value.trim();
+  const tel = document.getElementById('musteriTel').value.trim();
+  if(!ad) return;
+  const d = db();
+  d.musteriler.push({id:Date.now(), ad, tel, bakiye:0});
+  save(d);
+  document.getElementById('musteriAdi').value='';
+  document.getElementById('musteriTel').value='';
+}
+
+function musteriSil(id){
+  const d = db();
+  d.musteriler = d.musteriler.filter(m=>m.id!==id);
+  d.hareketler = d.hareketler.filter(h=>h.musteriId!==id);
+  save(d);
+}
+
+function hesapHareketEkle(){
+  const musteriId = Number(document.getElementById('hesapMusteri').value);
+  const tutar = Number(document.getElementById('hesapTutar').value);
+  const yon = document.getElementById('hesapYon').value;
+  const not_ = document.getElementById('hesapNot').value.trim();
+  if(!musteriId || !tutar) return;
+  const d = db();
+  const m = d.musteriler.find(x=>x.id===musteriId);
+  const fark = yon==='borc' ? tutar : -tutar;
+  m.bakiye = (m.bakiye||0) + fark;
+  d.hareketler.push({id:Date.now(), musteriId, tutar:fark, not:not_, tarih:new Date().toLocaleDateString('tr-TR')});
+  save(d);
+  document.getElementById('hesapTutar').value='';
+  document.getElementById('hesapNot').value='';
+}
+
+function whatsappHatirlat(m){
+  if(!m.tel){ alert('Bu müşterinin telefonu kayıtlı değil.'); return; }
+  const tel = m.tel.replace(/[^0-9]/g,'');
+  const tutar = Math.abs(m.bakiye);
+  const msg = encodeURIComponent(`Merhaba ${m.ad}, dükkan hesabımıza göre ${tutar} ₺ borcunuz görünüyor. Müsait olduğunuzda uğrayabilir misiniz? Teşekkürler.`);
+  window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+}
+
+function satisEkle(){
+  const tutar = Number(document.getElementById('satisTutar').value);
+  const tip = document.getElementById('satisTip').value;
+  if(!tutar) return;
+  const d = db();
+  const now = new Date();
+  d.satislar.push({id:Date.now(), tutar, tip, tarihISO: now.toISOString().slice(0,10), saat: now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})});
+  save(d);
+  document.getElementById('satisTutar').value='';
+}
+
+function dukkanAdiKaydet(){
+  const ad = document.getElementById('dukkanAdiInput').value.trim();
+  if(!ad) return;
+  const d = db();
+  d.dukkanAdi = ad;
+  save(d);
+}
+
+function stokEkle(){
+  const ad = document.getElementById('stokAd').value.trim();
+  const adet = Number(document.getElementById('stokAdet').value);
+  const esik = Number(document.getElementById('stokEsik').value) || 5;
+  if(!ad) return;
+  const d = db();
+  d.stok.push({id:Date.now(), ad, adet, esik});
+  save(d);
+  document.getElementById('stokAd').value='';
+  document.getElementById('stokAdet').value='';
+  document.getElementById('stokEsik').value='';
+}
+
+function stokGuncelle(id, delta){
+  const d = db();
+  const s = d.stok.find(x=>x.id===id);
+  s.adet = Math.max(0, s.adet + delta);
+  save(d);
+}
+
+function stokSil(id){
+  const d = db();
+  d.stok = d.stok.filter(x=>x.id!==id);
+  save(d);
+}
+
+function yedekIndir(){
+  const d = db();
+  const blob = new Blob([JSON.stringify(d, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const tarih = new Date().toLocaleDateString('tr-TR').replace(/\./g,'-');
+  a.href = url;
+  a.download = `dukkan-yedek-${tarih}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function yedekYukle(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const gelen = JSON.parse(e.target.result);
+      if(!gelen.musteriler || !gelen.stok) throw new Error('geçersiz dosya');
+      if(!confirm('Bu yedek yüklenince mevcut veriler bu yedekle değiştirilecek. Devam edilsin mi?')) return;
+      save(gelen);
+      alert('Yedek başarıyla yüklendi.');
+    }catch(err){
+      alert('Bu dosya okunamadı, geçerli bir yedek dosyası seç.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function tumVeriSifirla(){
+  if(!confirm('TÜM veriler silinecek (müşteri, borç, satış, stok). Emin misin?')) return;
+  if(!confirm('Son kez soruyorum, geri alınamaz. Sıfırlansın mı?')) return;
+  localStorage.removeItem(DB_KEY);
+  render();
+}
+
+function render(){
+  const d = db();
+
+  // Başlık / kişiselleştirme
+  document.getElementById('baslik').textContent = d.dukkanAdi ? `🧾 ${d.dukkanAdi} — Dükkan Asistanı` : '🧾 Dükkan Defterim';
+  const dukkanAdiInput = document.getElementById('dukkanAdiInput');
+  if(dukkanAdiInput && !dukkanAdiInput.value) dukkanAdiInput.value = d.dukkanAdi || '';
+
+  // Müşteriler
+  const ml = document.getElementById('musteriListe');
+  ml.innerHTML = d.musteriler.length ? '' : '<div class="empty">Henüz müşteri yok. Yukarıdan ekle.</div>';
+  d.musteriler.forEach(m=>{
+    const cls = m.bakiye>0?'amt-pos':(m.bakiye<0?'amt-neg':'amt-zero');
+    const txt = m.bakiye>0?`${m.bakiye} ₺ borçlu`:(m.bakiye<0?`${Math.abs(m.bakiye)} ₺ alacaklı`:'Hesap kapalı');
+    ml.innerHTML += `<div class="list-item">
+      <div><div class="name">${m.ad}</div><div class="sub">${m.tel||'telefon yok'}</div></div>
+      <div style="text-align:right">
+        <div class="${cls}">${txt}</div>
+        <div class="actions">
+          ${m.tel?`<button class="ghost whatsapp" onclick='whatsappHatirlat(${JSON.stringify(m)})'>WhatsApp</button>`:''}
+          <button class="ghost" onclick="musteriSil(${m.id})">Sil</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Hesap seçici
+  const sel = document.getElementById('hesapMusteri');
+  sel.innerHTML = d.musteriler.map(m=>`<option value="${m.id}">${m.ad}</option>`).join('') || '<option value="">Önce müşteri ekle</option>';
+
+  // Alacak/Verecek özet
+  const alacak = d.musteriler.filter(m=>m.bakiye>0).reduce((s,m)=>s+m.bakiye,0);
+  const verecek = d.musteriler.filter(m=>m.bakiye<0).reduce((s,m)=>s+Math.abs(m.bakiye),0);
+  document.getElementById('toplamAlacak').textContent = alacak+' ₺';
+  document.getElementById('toplamVerecek').textContent = verecek+' ₺';
+
+  const al = document.getElementById('alacakListe');
+  const hareketler = [...d.hareketler].reverse().slice(0,20);
+  al.innerHTML = hareketler.length ? '' : '<div class="empty">Henüz hareket yok.</div>';
+  hareketler.forEach(h=>{
+    const m = d.musteriler.find(x=>x.id===h.musteriId);
+    if(!m) return;
+    const cls = h.tutar>0?'amt-pos':'amt-neg';
+    al.innerHTML += `<div class="list-item">
+      <div><div class="name">${m.ad}</div><div class="sub">${h.not||'-'} · ${h.tarih}</div></div>
+      <div class="${cls}">${h.tutar>0?'+':''}${h.tutar} ₺</div>
+    </div>`;
+  });
+
+  // Kazanç (bugün, filtrelenmiş)
+  const bugunISO = new Date().toISOString().slice(0,10);
+  const bugunSatislar = d.satislar.filter(x=>(x.tarihISO||bugunISO)===bugunISO);
+  const toplam = bugunSatislar.reduce((s,x)=>s+x.tutar,0);
+  const nakit = bugunSatislar.filter(x=>x.tip==='nakit').reduce((s,x)=>s+x.tutar,0);
+  const kart = bugunSatislar.filter(x=>x.tip==='kart').reduce((s,x)=>s+x.tutar,0);
+  document.getElementById('gunToplam').textContent = toplam+' ₺';
+  document.getElementById('gunNakit').textContent = nakit+' ₺';
+  document.getElementById('gunKart').textContent = kart+' ₺';
+
+  const sl = document.getElementById('satisListe');
+  sl.innerHTML = bugunSatislar.length ? '' : '<div class="empty">Bugün henüz satış girilmedi.</div>';
+  [...bugunSatislar].reverse().forEach(s=>{
+    sl.innerHTML += `<div class="list-item">
+      <div><span class="badge">${s.tip==='nakit'?'Nakit':'Kart'}</span> <span class="sub">${s.saat}</span></div>
+      <div class="name">${s.tutar} ₺</div>
+    </div>`;
+  });
+
+  // Haftalık / Aylık özet (tüm geçmiş satışlardan)
+  const simdi = new Date();
+  const haftaBasi = new Date(simdi); haftaBasi.setDate(simdi.getDate()-7);
+  const ayBasi = new Date(simdi); ayBasi.setDate(simdi.getDate()-30);
+  const haftaToplam = d.satislar.filter(x=>x.tarihISO && new Date(x.tarihISO)>=haftaBasi).reduce((s,x)=>s+x.tutar,0);
+  const ayToplam = d.satislar.filter(x=>x.tarihISO && new Date(x.tarihISO)>=ayBasi).reduce((s,x)=>s+x.tutar,0);
+  document.getElementById('haftaToplam').textContent = haftaToplam+' ₺';
+  document.getElementById('ayToplam').textContent = ayToplam+' ₺';
+
+  const enCokBorclu = [...d.musteriler].filter(m=>m.bakiye>0).sort((a,b)=>b.bakiye-a.bakiye).slice(0,3);
+  const ecb = document.getElementById('enCokBorclu');
+  ecb.innerHTML = enCokBorclu.length
+    ? '<div class="sub" style="margin-bottom:6px;">En çok borçlu 3 müşteri:</div>' + enCokBorclu.map(m=>`<div class="list-item"><div class="name">${m.ad}</div><div class="amt-pos">${m.bakiye} ₺</div></div>`).join('')
+    : '<div class="empty">Borçlu müşteri yok.</div>';
+
+  // Stok
+  const st = document.getElementById('stokListe');
+  st.innerHTML = d.stok.length ? '' : '<div class="empty">Henüz mal eklenmedi.</div>';
+  d.stok.forEach(s=>{
+    const low = s.adet<=s.esik;
+    st.innerHTML += `<div class="list-item">
+      <div><div class="name">${s.ad}</div><div class="sub ${low?'low':''}">${low?'⚠ Azaldı — ':''}Uyarı sınırı: ${s.esik}</div></div>
+      <div style="text-align:right">
+        <div class="${low?'low':''}" style="font-size:16px;font-weight:800;">${s.adet} adet</div>
+        <div class="actions">
+          <button class="ghost" onclick="stokGuncelle(${s.id},-1)">-1</button>
+          <button class="ghost" onclick="stokGuncelle(${s.id},1)">+1</button>
+          <button class="ghost" onclick="stokSil(${s.id})">Sil</button>
+        </div>
+      </div>
+    </div>`;
+  });
+}
+
+render();
+</script>
+</body>
+</html>
