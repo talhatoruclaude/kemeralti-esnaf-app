@@ -554,7 +554,7 @@ function render(){
       <div style="text-align:right">
         <div class="${cls}">${txt}</div>
         <div class="actions">
-          ${(m.tel||m.demo) && m.bakiye>0?`<button class="ghost whatsapp" onclick="whatsappHatirlat(${m.id})">Borç Hatırlat</button>`:''}
+          ${(m.tel||m.demo) && m.bakiye>0?`<button class="ghost whatsapp" onclick="whatsappHatirlat(${m.id})">💬 WhatsApp ile Hatırlat</button>`:''}
           <button class="ghost" onclick="musteriSil(${m.id})">Sil</button>
         </div>
       </div>
@@ -582,7 +582,7 @@ function render(){
         <div class="sub">Kapora ${tl(s.kapora)} · Kalan <b>${tl(Math.max(s.toplam-s.kapora,0))}</b></div></div>
       <div class="actions" style="flex-direction:column;">
         <button class="ghost" onclick="siparisTeslim(${s.id})">✓ Teslim</button>
-        <button class="ghost whatsapp" onclick="siparisWA(${s.id})">WhatsApp</button>
+        <button class="ghost whatsapp" onclick="siparisWA(${s.id})">💬 WhatsApp</button>
         <button class="ghost" onclick="siparisSil(${s.id})">Sil</button>
       </div>
     </div>`;
@@ -611,7 +611,7 @@ function render(){
   kayip.forEach(({m,gecen})=>{
     gkl.innerHTML += `<div class="list-item">
       <div><div class="name">${esc(m.ad)}</div><div class="sub">${gecen>=999?'Geliş tarihi yok':`${gecen} gündür uğramadı`}${m.sonMesaj?` · son mesaj ${trTarih(m.sonMesaj)}`:''}</div></div>
-      <button class="ghost whatsapp" onclick="geriKazanWA(${m.id})">Mesaj At</button>
+      <button class="ghost whatsapp" onclick="geriKazanWA(${m.id})">💬 WhatsApp ile Çağır</button>
     </div>`;
   });
 
@@ -670,7 +670,7 @@ function render(){
 
   // Stok
   const azalanSayi = d.stok.filter(s=>s.adet<=s.esik).length;
-  el('toptanciBtn').textContent = azalanSayi ? `WhatsApp'tan ${azalanSayi} Azalan Malı Sipariş Et` : 'Azalan mal yok';
+  el('toptanciBtn').textContent = azalanSayi ? `💬 WhatsApp'tan ${azalanSayi} Azalan Malı Sipariş Et` : 'Azalan mal yok';
   if(document.activeElement !== el('toptanciTel') && !el('toptanciTel').value) el('toptanciTel').value = d.toptanciTel || '';
 
   const st = document.getElementById('stokListe');
