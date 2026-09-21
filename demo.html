@@ -12,20 +12,23 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  header{padding:18px 16px 10px;text-align:center;border-bottom:1px solid var(--line);}
-  header h1{margin:0;font-size:20px;}
-  header p{margin:4px 0 0;color:var(--muted);font-size:13px;}
-  nav{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;}
-  nav button{flex:1;min-width:88px;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;}
-  nav button.active{background:var(--accent);border-color:var(--accent);color:#04240f;font-weight:700;}
+  header{padding:22px 16px 16px;text-align:center;background:linear-gradient(180deg,#141821 0%, var(--bg) 100%);border-bottom:1px solid var(--line);}
+  header h1{margin:0;font-size:21px;letter-spacing:-0.3px;}
+  header p{margin:5px 0 0;color:var(--muted);font-size:13px;}
+  nav{display:flex;gap:6px;padding:10px;overflow-x:auto;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,13,18,0.95);backdrop-filter:blur(6px);z-index:5;}
+  nav button{flex:1;min-width:88px;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s ease;}
+  nav button.active{background:var(--accent);border-color:var(--accent);color:#04240f;font-weight:700;box-shadow:0 2px 10px rgba(34,197,94,.35);}
   main{padding:14px;max-width:520px;margin:0 auto;}
   .panel{display:none;}
-  .panel.active{display:block;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .panel.active{display:block;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.25);}
   .row{display:flex;gap:8px;}
   .row > *{flex:1;}
   input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:14px;margin-bottom:8px;}
-  button.primary{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#04240f;font-weight:700;font-size:14px;cursor:pointer;}
+  input:focus,select:focus{outline:none;border-color:var(--accent);}
+  button.primary{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent2));color:#04240f;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 10px rgba(34,197,94,.3);}
+  button.primary:active{transform:scale(.98);}
   button.ghost{padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--text);font-size:12px;cursor:pointer;}
   .list-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--line);}
   .list-item:last-child{border-bottom:none;}
@@ -43,6 +46,10 @@
   .actions{display:flex;gap:6px;margin-top:8px;}
   .low{color:var(--amber);font-weight:700;}
   .whatsapp{background:#1fae56;color:#fff;border:none;}
+  .uyari{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.45);cursor:pointer;}
+  .uyari.acil{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);}
+  .late{color:var(--red);font-weight:700;}
+  .demo-cta{border-style:dashed;text-align:center;}
   footer{text-align:center;color:var(--muted);font-size:11px;padding:20px;}
 </style>
 </head>
@@ -55,6 +62,8 @@
 
 <nav>
   <button data-tab="musteriler" class="active">Müşteriler</button>
+  <button data-tab="siparisler">Sipariş & Kapora</button>
+  <button data-tab="gerikazan">Geri Kazan</button>
   <button data-tab="alacak">Alacak/Verecek</button>
   <button data-tab="kazanc">Bugünkü Kazanç</button>
   <button data-tab="stok">Depodaki Mallar</button>
@@ -63,8 +72,15 @@
 
 <main>
 
+  <div id="uyariKutusu"></div>
+
   <!-- MÜŞTERİLER -->
   <section class="panel active" id="musteriler">
+    <div class="card demo-cta" id="demoCTA" style="display:none;">
+      <div class="name" style="margin-bottom:6px;">👀 Uygulamayı dolu hâliyle gör</div>
+      <div class="sub" style="margin-bottom:10px;">Örnek müşteri, sipariş ve stokla nasıl çalıştığını hemen görebilirsin.</div>
+      <button class="primary" onclick="demoYukle()">Örnek Verileri Yükle</button>
+    </div>
     <div class="card">
       <div class="row">
         <input id="musteriAdi" placeholder="Müşteri adı">
@@ -73,6 +89,48 @@
       <button class="primary" onclick="musteriEkle()">+ Müşteri Ekle</button>
     </div>
     <div class="card" id="musteriListe"></div>
+  </section>
+
+  <!-- SİPARİŞ & KAPORA -->
+  <section class="panel" id="siparisler">
+    <div class="card">
+      <div class="stat">
+        <div class="box"><div class="v" id="sipBekleyen">0</div><div class="l">Bekleyen Sipariş</div></div>
+        <div class="box"><div class="v" id="sipKaporaTop">0 ₺</div><div class="l">Alınan Kapora</div></div>
+        <div class="box"><div class="v" id="sipKalanTop">0 ₺</div><div class="l">Teslimde Alınacak</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <select id="sipMusteri"></select>
+      <input id="sipIs" placeholder="Ne sipariş edildi? (örn: abiye dikim, gelinlik tadilat)">
+      <div class="row">
+        <input id="sipToplam" type="number" placeholder="Toplam fiyat (₺)">
+        <input id="sipKapora" type="number" placeholder="Alınan kapora (₺)">
+      </div>
+      <div class="sub" style="margin-bottom:4px;">Teslim tarihi</div>
+      <input id="sipTeslim" type="date">
+      <button class="primary" onclick="siparisEkle()">+ Sipariş Kaydet</button>
+    </div>
+    <div class="card" id="siparisListe"></div>
+    <div class="card" id="teslimListe"></div>
+  </section>
+
+  <!-- GERİ KAZAN -->
+  <section class="panel" id="gerikazan">
+    <div class="card">
+      <div class="name" style="margin-bottom:6px;">💬 Kaybolan müşteriyi geri getir</div>
+      <div class="sub" style="margin-bottom:10px;">Uzun süredir uğramayan müşterilere tek tuşla WhatsApp'tan mesaj at.</div>
+      <div class="row">
+        <select id="gkGun" onchange="render()">
+          <option value="30">30 gündür gelmeyen</option>
+          <option value="60" selected>60 gündür gelmeyen</option>
+          <option value="90">90 gündür gelmeyen</option>
+        </select>
+      </div>
+      <div class="sub" style="margin-bottom:4px;">Mesaj ({ad} yerine müşterinin adı yazılır)</div>
+      <input id="gkMesaj" onchange="gkMesajKaydet()">
+    </div>
+    <div class="card" id="geriKazanListe"></div>
   </section>
 
   <!-- ALACAK / VERECEK -->
@@ -138,6 +196,12 @@
     <div class="card">
       <div class="name" style="margin-bottom:6px;">🔒 Verileriniz güvende</div>
       <div class="sub">Tüm bilgiler (müşteri, borç, satış, stok) sadece bu telefonda/bilgisayarda saklanır. İnternete, bize ya da başka hiçbir yere gönderilmez. İnternet olmadan da çalışır.</div>
+      <div class="sub" style="margin-top:8px;">ℹ️ Bu uygulama kendi takibin içindir; resmi fatura, fiş veya muhasebe belgesi yerine geçmez.</div>
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">👀 Örnek Verileri Yükle</div>
+      <div class="sub" style="margin-bottom:10px;">Uygulamayı örnek müşteri, sipariş ve stokla doldurur. Mevcut verilerin yerine geçer.</div>
+      <button class="ghost" style="width:100%;" onclick="demoYukle()">Örnek Verileri Yükle</button>
     </div>
     <div class="card">
       <div class="name" style="margin-bottom:8px;">📤 Yedek Al</div>
@@ -159,12 +223,25 @@
   <!-- STOK -->
   <section class="panel" id="stok">
     <div class="card">
+      <div class="name" style="margin-bottom:6px;">📥 Excel'den Toplu Yükle</div>
+      <div class="sub" style="margin-bottom:10px;">Excel'de "Farklı Kaydet" → CSV seç → buradan yükle. Tüm malların saniyeler içinde hazır olur, tek tek yazmana gerek kalmaz.</div>
+      <div class="sub" style="margin-bottom:10px;">Sütun sırası: <b>Ürün Adı, Adet, Uyarı Sınırı</b></div>
+      <input type="file" id="stokCSV" accept=".csv,text/csv" onchange="stokCSVYukle(event)">
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:8px;">✋ Ya da Tek Tek Ekle</div>
       <div class="row">
         <input id="stokAd" placeholder="Ürün adı">
         <input id="stokAdet" type="number" placeholder="Adet">
       </div>
       <input id="stokEsik" type="number" placeholder="Azaldı uyarısı (örn: 5)">
       <button class="primary" onclick="stokEkle()">+ Mal Ekle</button>
+    </div>
+    <div class="card">
+      <div class="name" style="margin-bottom:6px;">🚚 Azalanları Toptancıya Gönder</div>
+      <div class="sub" style="margin-bottom:10px;">Azalan malların sipariş listesi hazırlanır, WhatsApp'tan toptancına gider.</div>
+      <input id="toptanciTel" placeholder="Toptancı telefonu (boş bırakırsan kişiyi WhatsApp'ta seçersin)">
+      <button class="primary whatsapp" id="toptanciBtn" onclick="toptanciyaGonder()">WhatsApp'tan Sipariş Listesi Gönder</button>
     </div>
     <div class="card" id="stokListe"></div>
   </section>
@@ -175,24 +252,42 @@
 
 <script>
 const DB_KEY = 'dukkanDefteriDB_v1';
-function db(){ return JSON.parse(localStorage.getItem(DB_KEY) || '{"musteriler":[],"hareketler":[],"satislar":[],"stok":[]}'); }
+const VARSAYILAN_GK_MESAJ = 'Merhaba {ad}, sizi özledik! Yeni sezon ürünlerimiz geldi, müsait olduğunuzda bekleriz.';
+function bos(){ return {musteriler:[],hareketler:[],satislar:[],stok:[],siparisler:[]}; }
+function db(){ return Object.assign(bos(), JSON.parse(localStorage.getItem(DB_KEY) || '{}')); }
 function save(d){ localStorage.setItem(DB_KEY, JSON.stringify(d)); render(); }
+function el(id){ return document.getElementById(id); }
 
-document.querySelectorAll('nav button').forEach(b=>{
-  b.onclick = ()=>{
-    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById(b.dataset.tab).classList.add('active');
-  };
-});
+// Yerel tarih (UTC değil) — gece yarısından sonra tarih kaymasın
+function yerelISO(t=new Date()){ const z=n=>String(n).padStart(2,'0'); return `${t.getFullYear()}-${z(t.getMonth()+1)}-${z(t.getDate())}`; }
+function gunEkle(n){ const t=new Date(); t.setDate(t.getDate()+n); return yerelISO(t); }
+function gunFarki(iso){ return Math.round((new Date(iso+'T00:00:00') - new Date(yerelISO()+'T00:00:00'))/86400000); }
+function trTarih(iso){ return new Date(iso+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long'}); }
+function tl(n){ return Number(n||0).toLocaleString('tr-TR')+' ₺'; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function dukkan(d){ return d.dukkanAdi || 'dükkanımız'; }
+
+// 0532..., 532..., +90 532... hepsini wa.me formatına (90532...) çevir
+function telNorm(t){ let n=String(t||'').replace(/\D/g,''); if(n.startsWith('0')) n='90'+n.slice(1); else if(n.length===10 && n.startsWith('5')) n='90'+n; return n; }
+// Numara yoksa (ya da örnek müşteriyse) WhatsApp kişi seçtirerek açılır — örnek veriyle gerçek birine mesaj gitmez
+function waAc(tel, msg){
+  const n = telNorm(tel);
+  window.open(n ? `https://wa.me/${n}?text=${encodeURIComponent(msg)}` : `https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function sekme(id){
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active', x.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active', x.id===id));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav button').forEach(b=>{ b.onclick = ()=>sekme(b.dataset.tab); });
 
 function musteriEkle(){
   const ad = document.getElementById('musteriAdi').value.trim();
   const tel = document.getElementById('musteriTel').value.trim();
   if(!ad) return;
   const d = db();
-  d.musteriler.push({id:Date.now(), ad, tel, bakiye:0});
+  d.musteriler.push({id:Date.now(), ad, tel, bakiye:0, sonGelis:yerelISO()});
   save(d);
   document.getElementById('musteriAdi').value='';
   document.getElementById('musteriTel').value='';
@@ -200,9 +295,105 @@ function musteriEkle(){
 
 function musteriSil(id){
   const d = db();
+  const m = d.musteriler.find(x=>x.id===id);
+  if(!confirm(`${m.ad} ve tüm hesap/sipariş kayıtları silinecek. Emin misin?`)) return;
   d.musteriler = d.musteriler.filter(m=>m.id!==id);
   d.hareketler = d.hareketler.filter(h=>h.musteriId!==id);
+  d.siparisler = d.siparisler.filter(s=>s.musteriId!==id);
   save(d);
+}
+
+// ---- SİPARİŞ & KAPORA ----
+function siparisEkle(){
+  const musteriId = Number(el('sipMusteri').value);
+  const is = el('sipIs').value.trim();
+  const toplam = Number(el('sipToplam').value)||0;
+  const kapora = Number(el('sipKapora').value)||0;
+  const teslim = el('sipTeslim').value;
+  if(!musteriId || !is || !teslim){ alert('Müşteri, sipariş ve teslim tarihi gerekli.'); return; }
+  const d = db();
+  d.siparisler.push({id:Date.now(), musteriId, is, toplam, kapora, teslim, durum:'bekliyor'});
+  const m = d.musteriler.find(x=>x.id===musteriId); if(m) m.sonGelis = yerelISO();
+  save(d);
+  ['sipIs','sipToplam','sipKapora','sipTeslim'].forEach(i=>el(i).value='');
+}
+function siparisTeslim(id){
+  const d = db();
+  const s = d.siparisler.find(x=>x.id===id);
+  if(!confirm(`"${s.is}" teslim edildi olarak işaretlensin mi?`)) return;
+  s.durum = 'teslim'; s.teslimTarihi = yerelISO();
+  const m = d.musteriler.find(x=>x.id===s.musteriId); if(m) m.sonGelis = yerelISO();
+  save(d);
+}
+function siparisSil(id){
+  if(!confirm('Bu sipariş silinsin mi?')) return;
+  const d = db();
+  d.siparisler = d.siparisler.filter(x=>x.id!==id);
+  save(d);
+}
+function siparisWA(id){
+  const d = db();
+  const s = d.siparisler.find(x=>x.id===id);
+  const m = d.musteriler.find(x=>x.id===s.musteriId);
+  const kalan = s.toplam - s.kapora;
+  const ne = gunFarki(s.teslim)<=0 ? 'teslime hazır, uygun olduğunuzda uğrayabilirsiniz' : `${trTarih(s.teslim)} tarihinde teslime hazır olacak`;
+  waAc(m.tel, `Merhaba ${m.ad}, ${dukkan(d)} olarak yazıyoruz. "${s.is}" siparişiniz ${ne}.${kalan>0?` Teslimde kalan ödeme: ${tl(kalan)}.`:''} Teşekkür ederiz.`);
+}
+
+// ---- GERİ KAZAN ----
+function gkMesajKaydet(){ const d = db(); d.geriKazanMesaj = el('gkMesaj').value.trim() || VARSAYILAN_GK_MESAJ; save(d); }
+function geriKazanWA(id){
+  const d = db();
+  const m = d.musteriler.find(x=>x.id===id);
+  waAc(m.tel, (d.geriKazanMesaj || VARSAYILAN_GK_MESAJ).replaceAll('{ad}', m.ad));
+  m.sonMesaj = yerelISO();
+  save(d);
+}
+
+// ---- TOPTANCI ----
+function toptanciyaGonder(){
+  const d = db();
+  const azalan = d.stok.filter(s=>s.adet<=s.esik);
+  if(!azalan.length){ alert('Şu an azalan mal yok.'); return; }
+  d.toptanciTel = el('toptanciTel').value.trim();
+  save(d);
+  const liste = azalan.map(s=>`- ${s.ad}: ${Math.max(s.esik*2 - s.adet, 1)} adet`).join('\n');
+  waAc(d.toptanciTel, `Merhaba, ${dukkan(d)} için sipariş listemiz:\n${liste}\nTeşekkürler.`);
+}
+
+// ---- ÖRNEK VERİ (DEMO) ----
+function demoYukle(){
+  const eski = db();
+  const doluMu = eski.musteriler.length || eski.stok.length || eski.satislar.length;
+  if(doluMu && !confirm('Mevcut verilerin yerine örnek veriler yüklenecek. Önce yedek almanı öneririz. Devam edilsin mi?')) return;
+  let sayac = Date.now();
+  const id = ()=>sayac++;
+  const d = bos();
+  d.dukkanAdi = 'Örnek Gelinlik & Abiye';
+  d.geriKazanMesaj = VARSAYILAN_GK_MESAJ;
+  // tel boş: örnek müşteriye WhatsApp'ta kişi seçtirerek açılır, gerçek numaraya gitmez
+  const mus = [['Ayşe Demir',-2],['Zeynep Kaya',-5],['Elif Şahin',-75],['Fatma Yıldız',-110],['Merve Aydın',-1],['Hatice Çelik',-64],['Selin Arslan',-12]]
+    .map(([ad,g])=>({id:id(), ad, tel:'', demo:true, bakiye:0, sonGelis:gunEkle(g)}));
+  d.musteriler = mus;
+  const hareket = (i,tutar,not_,g)=>{ mus[i].bakiye += tutar; d.hareketler.push({id:id(), musteriId:mus[i].id, tutar, not:not_, tarih:new Date(gunEkle(g)+'T00:00:00').toLocaleDateString('tr-TR')}); };
+  hareket(0,2500,'Abiye kumaşı',-9); hareket(0,-700,'Nakit ödeme',-2);
+  hareket(2,950,'Tül + dantel',-75);
+  hareket(5,2400,'Nişan elbisesi kalan',-64);
+  hareket(4,-500,'Fazla ödeme (iade edilecek)',-1);
+  const sip = (i,is,toplam,kapora,g)=>d.siparisler.push({id:id(), musteriId:mus[i].id, is, toplam, kapora, teslim:gunEkle(g), durum:'bekliyor'});
+  sip(4,'Nişan elbisesi prova',4500,2000,-1);
+  sip(0,'Gelinlik tadilat + kısaltma',3500,1500,1);
+  sip(1,'Abiye dikim - lacivert saten',6000,2500,3);
+  sip(6,'Kına kıyafeti kiralama',2000,500,9);
+  const saat = (h,m)=>`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  [[1850,'nakit',0,saat(10,15)],[3200,'kart',0,saat(11,40)],[650,'nakit',0,saat(13,5)],[4100,'kart',-2,saat(15,20)],[2300,'nakit',-4,saat(12,0)],[5400,'kart',-12,saat(16,30)]]
+    .forEach(([tutar,tip,g,s])=>d.satislar.push({id:id(), tutar, tip, tarihISO:gunEkle(g), saat:s}));
+  d.stok = [['Beyaz Saten Kumaş (m)',40,10],['Dantel Şerit (top)',4,5],['Gelinlik Boncuk Set',2,3],['İnci Düğme',120,20],['Tül Kumaş (m)',6,8],['Gizli Fermuar',35,10]]
+    .map(([ad,adet,esik])=>({id:id(), ad, adet, esik}));
+  el('dukkanAdiInput').value = '';
+  save(d);
+  sekme('musteriler');
+  alert('Örnek veriler yüklendi. Kendi verilerine geçmeden önce Ayarlar > Tüm Verileri Sıfırla ile temizleyebilirsin.');
 }
 
 function hesapHareketEkle(){
@@ -215,18 +406,18 @@ function hesapHareketEkle(){
   const m = d.musteriler.find(x=>x.id===musteriId);
   const fark = yon==='borc' ? tutar : -tutar;
   m.bakiye = (m.bakiye||0) + fark;
+  m.sonGelis = yerelISO();
   d.hareketler.push({id:Date.now(), musteriId, tutar:fark, not:not_, tarih:new Date().toLocaleDateString('tr-TR')});
   save(d);
   document.getElementById('hesapTutar').value='';
   document.getElementById('hesapNot').value='';
 }
 
-function whatsappHatirlat(m){
-  if(!m.tel){ alert('Bu müşterinin telefonu kayıtlı değil.'); return; }
-  const tel = m.tel.replace(/[^0-9]/g,'');
-  const tutar = Math.abs(m.bakiye);
-  const msg = encodeURIComponent(`Merhaba ${m.ad}, dükkan hesabımıza göre ${tutar} ₺ borcunuz görünüyor. Müsait olduğunuzda uğrayabilir misiniz? Teşekkürler.`);
-  window.open(`https://wa.me/${tel}?text=${msg}`, '_blank');
+function whatsappHatirlat(id){
+  const d = db();
+  const m = d.musteriler.find(x=>x.id===id);
+  if(!m.tel && !m.demo){ alert('Bu müşterinin telefonu kayıtlı değil.'); return; }
+  waAc(m.tel, `Merhaba ${m.ad}, ${dukkan(d)} hesabımıza göre ${tl(m.bakiye)} borcunuz görünüyor. Müsait olduğunuzda uğrayabilir misiniz? Teşekkürler.`);
 }
 
 function satisEkle(){
@@ -235,7 +426,7 @@ function satisEkle(){
   if(!tutar) return;
   const d = db();
   const now = new Date();
-  d.satislar.push({id:Date.now(), tutar, tip, tarihISO: now.toISOString().slice(0,10), saat: now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})});
+  d.satislar.push({id:Date.now(), tutar, tip, tarihISO: yerelISO(now), saat: now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})});
   save(d);
   document.getElementById('satisTutar').value='';
 }
@@ -259,6 +450,37 @@ function stokEkle(){
   document.getElementById('stokAd').value='';
   document.getElementById('stokAdet').value='';
   document.getElementById('stokEsik').value='';
+}
+
+function stokCSVYukle(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const metin = e.target.result;
+      const satirlar = metin.split(/\r?\n/).filter(s=>s.trim()!=='');
+      if(!satirlar.length) throw new Error('boş dosya');
+      const ayrac = (satirlar[0].match(/;/g)||[]).length >= (satirlar[0].match(/,/g)||[]).length ? ';' : ',';
+      const d = db();
+      let eklenen = 0;
+      satirlar.forEach((satir, i)=>{
+        const parca = satir.split(ayrac).map(p=>p.trim().replace(/^"|"$/g,''));
+        const ad = parca[0];
+        const adet = Number((parca[1]||'').replace(',','.'));
+        const esik = Number((parca[2]||'').replace(',','.')) || 5;
+        if(!ad || isNaN(adet)) return; // başlık satırı ya da bozuk satır, atla
+        d.stok.push({id: Date.now()+eklenen, ad, adet, esik});
+        eklenen++;
+      });
+      save(d);
+      alert(eklenen>0 ? `${eklenen} ürün stoğa eklendi.` : 'Dosyadan ürün okunamadı. Format: Ürün Adı, Adet, Uyarı Sınırı');
+    }catch(err){
+      alert('Bu dosya okunamadı. CSV formatında olmalı: Ürün Adı, Adet, Uyarı Sınırı');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  event.target.value = '';
 }
 
 function stokGuncelle(id, delta){
@@ -323,30 +545,81 @@ function render(){
   // Müşteriler
   const ml = document.getElementById('musteriListe');
   ml.innerHTML = d.musteriler.length ? '' : '<div class="empty">Henüz müşteri yok. Yukarıdan ekle.</div>';
+  el('demoCTA').style.display = (d.musteriler.length || d.stok.length) ? 'none' : 'block';
   d.musteriler.forEach(m=>{
     const cls = m.bakiye>0?'amt-pos':(m.bakiye<0?'amt-neg':'amt-zero');
-    const txt = m.bakiye>0?`${m.bakiye} ₺ borçlu`:(m.bakiye<0?`${Math.abs(m.bakiye)} ₺ alacaklı`:'Hesap kapalı');
+    const txt = m.bakiye>0?`${tl(m.bakiye)} borçlu`:(m.bakiye<0?`${tl(Math.abs(m.bakiye))} alacaklı`:'Hesap kapalı');
     ml.innerHTML += `<div class="list-item">
-      <div><div class="name">${m.ad}</div><div class="sub">${m.tel||'telefon yok'}</div></div>
+      <div><div class="name">${esc(m.ad)}</div><div class="sub">${m.demo?'örnek müşteri':esc(m.tel||'telefon yok')}</div></div>
       <div style="text-align:right">
         <div class="${cls}">${txt}</div>
         <div class="actions">
-          ${m.tel?`<button class="ghost whatsapp" onclick='whatsappHatirlat(${JSON.stringify(m)})'>WhatsApp</button>`:''}
+          ${(m.tel||m.demo) && m.bakiye>0?`<button class="ghost whatsapp" onclick="whatsappHatirlat(${m.id})">Borç Hatırlat</button>`:''}
           <button class="ghost" onclick="musteriSil(${m.id})">Sil</button>
         </div>
       </div>
     </div>`;
   });
 
-  // Hesap seçici
-  const sel = document.getElementById('hesapMusteri');
-  sel.innerHTML = d.musteriler.map(m=>`<option value="${m.id}">${m.ad}</option>`).join('') || '<option value="">Önce müşteri ekle</option>';
+  // Müşteri seçiciler (seçimi koru)
+  const secenek = d.musteriler.map(m=>`<option value="${m.id}">${esc(m.ad)}</option>`).join('') || '<option value="">Önce müşteri ekle</option>';
+  ['hesapMusteri','sipMusteri'].forEach(i=>{ const s=el(i), v=s.value; s.innerHTML=secenek; if(v && d.musteriler.some(m=>String(m.id)===v)) s.value=v; });
+
+  // Sipariş & Kapora
+  const bekleyen = d.siparisler.filter(s=>s.durum==='bekliyor').sort((a,b)=>a.teslim.localeCompare(b.teslim));
+  el('sipBekleyen').textContent = bekleyen.length;
+  el('sipKaporaTop').textContent = tl(bekleyen.reduce((t,s)=>t+s.kapora,0));
+  el('sipKalanTop').textContent = tl(bekleyen.reduce((t,s)=>t+Math.max(s.toplam-s.kapora,0),0));
+  const sipl = el('siparisListe');
+  sipl.innerHTML = bekleyen.length ? '<div class="sub" style="margin-bottom:4px;">Teslim sırasına göre:</div>' : '<div class="empty">Bekleyen sipariş yok.</div>';
+  bekleyen.forEach(s=>{
+    const m = d.musteriler.find(x=>x.id===s.musteriId) || {ad:'?'};
+    const g = gunFarki(s.teslim);
+    const durum = g<0?`<span class="late">⚠ ${-g} gün gecikti</span>`:(g===0?'<span class="late">⏰ Bugün teslim</span>':(g<=3?`<span class="low">⏰ ${g} gün kaldı</span>`:`<span class="sub">${g} gün kaldı</span>`));
+    sipl.innerHTML += `<div class="list-item" style="align-items:flex-start;">
+      <div><div class="name">${esc(m.ad)}</div><div class="sub">${esc(s.is)}</div>
+        <div class="sub">Teslim: ${trTarih(s.teslim)} · ${durum}</div>
+        <div class="sub">Kapora ${tl(s.kapora)} · Kalan <b>${tl(Math.max(s.toplam-s.kapora,0))}</b></div></div>
+      <div class="actions" style="flex-direction:column;">
+        <button class="ghost" onclick="siparisTeslim(${s.id})">✓ Teslim</button>
+        <button class="ghost whatsapp" onclick="siparisWA(${s.id})">WhatsApp</button>
+        <button class="ghost" onclick="siparisSil(${s.id})">Sil</button>
+      </div>
+    </div>`;
+  });
+  const teslimEdilen = d.siparisler.filter(s=>s.durum==='teslim').slice(-5).reverse();
+  el('teslimListe').style.display = teslimEdilen.length ? 'block' : 'none';
+  el('teslimListe').innerHTML = '<div class="sub" style="margin-bottom:4px;">Son teslim edilenler:</div>' + teslimEdilen.map(s=>{
+    const m = d.musteriler.find(x=>x.id===s.musteriId) || {ad:'?'};
+    return `<div class="list-item"><div><div class="name">${esc(m.ad)}</div><div class="sub">${esc(s.is)}</div></div><div class="amt-neg">✓ ${trTarih(s.teslimTarihi||s.teslim)}</div></div>`;
+  }).join('');
+
+  // Üst uyarı: yaklaşan / geciken teslimler
+  const acil = bekleyen.filter(s=>gunFarki(s.teslim)<=3);
+  const geciken = acil.filter(s=>gunFarki(s.teslim)<0).length;
+  el('uyariKutusu').innerHTML = acil.length ? `<div class="card uyari ${geciken?'acil':''}" onclick="sekme('siparisler')">
+    <div class="name">⏰ ${acil.length} siparişin teslimi yaklaştı${geciken?` (${geciken} tanesi gecikti)`:''}</div>
+    <div class="sub">Görmek için dokun</div></div>` : '';
+
+  // Geri Kazan
+  if(document.activeElement !== el('gkMesaj')) el('gkMesaj').value = d.geriKazanMesaj || VARSAYILAN_GK_MESAJ;
+  const esikGun = Number(el('gkGun').value);
+  const kayip = d.musteriler.map(m=>({m, gecen: m.sonGelis ? -gunFarki(m.sonGelis) : 999}))
+    .filter(x=>x.gecen>=esikGun).sort((a,b)=>b.gecen-a.gecen);
+  const gkl = el('geriKazanListe');
+  gkl.innerHTML = kayip.length ? `<div class="sub" style="margin-bottom:4px;">${kayip.length} müşteri ${esikGun}+ gündür uğramadı:</div>` : `<div class="empty">${esikGun} gündür uğramayan müşteri yok. 👏</div>`;
+  kayip.forEach(({m,gecen})=>{
+    gkl.innerHTML += `<div class="list-item">
+      <div><div class="name">${esc(m.ad)}</div><div class="sub">${gecen>=999?'Geliş tarihi yok':`${gecen} gündür uğramadı`}${m.sonMesaj?` · son mesaj ${trTarih(m.sonMesaj)}`:''}</div></div>
+      <button class="ghost whatsapp" onclick="geriKazanWA(${m.id})">Mesaj At</button>
+    </div>`;
+  });
 
   // Alacak/Verecek özet
   const alacak = d.musteriler.filter(m=>m.bakiye>0).reduce((s,m)=>s+m.bakiye,0);
   const verecek = d.musteriler.filter(m=>m.bakiye<0).reduce((s,m)=>s+Math.abs(m.bakiye),0);
-  document.getElementById('toplamAlacak').textContent = alacak+' ₺';
-  document.getElementById('toplamVerecek').textContent = verecek+' ₺';
+  document.getElementById('toplamAlacak').textContent = tl(alacak);
+  document.getElementById('toplamVerecek').textContent = tl(verecek);
 
   const al = document.getElementById('alacakListe');
   const hareketler = [...d.hareketler].reverse().slice(0,20);
@@ -362,14 +635,14 @@ function render(){
   });
 
   // Kazanç (bugün, filtrelenmiş)
-  const bugunISO = new Date().toISOString().slice(0,10);
+  const bugunISO = yerelISO();
   const bugunSatislar = d.satislar.filter(x=>(x.tarihISO||bugunISO)===bugunISO);
   const toplam = bugunSatislar.reduce((s,x)=>s+x.tutar,0);
   const nakit = bugunSatislar.filter(x=>x.tip==='nakit').reduce((s,x)=>s+x.tutar,0);
   const kart = bugunSatislar.filter(x=>x.tip==='kart').reduce((s,x)=>s+x.tutar,0);
-  document.getElementById('gunToplam').textContent = toplam+' ₺';
-  document.getElementById('gunNakit').textContent = nakit+' ₺';
-  document.getElementById('gunKart').textContent = kart+' ₺';
+  document.getElementById('gunToplam').textContent = tl(toplam);
+  document.getElementById('gunNakit').textContent = tl(nakit);
+  document.getElementById('gunKart').textContent = tl(kart);
 
   const sl = document.getElementById('satisListe');
   sl.innerHTML = bugunSatislar.length ? '' : '<div class="empty">Bugün henüz satış girilmedi.</div>';
@@ -386,8 +659,8 @@ function render(){
   const ayBasi = new Date(simdi); ayBasi.setDate(simdi.getDate()-30);
   const haftaToplam = d.satislar.filter(x=>x.tarihISO && new Date(x.tarihISO)>=haftaBasi).reduce((s,x)=>s+x.tutar,0);
   const ayToplam = d.satislar.filter(x=>x.tarihISO && new Date(x.tarihISO)>=ayBasi).reduce((s,x)=>s+x.tutar,0);
-  document.getElementById('haftaToplam').textContent = haftaToplam+' ₺';
-  document.getElementById('ayToplam').textContent = ayToplam+' ₺';
+  document.getElementById('haftaToplam').textContent = tl(haftaToplam);
+  document.getElementById('ayToplam').textContent = tl(ayToplam);
 
   const enCokBorclu = [...d.musteriler].filter(m=>m.bakiye>0).sort((a,b)=>b.bakiye-a.bakiye).slice(0,3);
   const ecb = document.getElementById('enCokBorclu');
@@ -396,6 +669,10 @@ function render(){
     : '<div class="empty">Borçlu müşteri yok.</div>';
 
   // Stok
+  const azalanSayi = d.stok.filter(s=>s.adet<=s.esik).length;
+  el('toptanciBtn').textContent = azalanSayi ? `WhatsApp'tan ${azalanSayi} Azalan Malı Sipariş Et` : 'Azalan mal yok';
+  if(document.activeElement !== el('toptanciTel') && !el('toptanciTel').value) el('toptanciTel').value = d.toptanciTel || '';
+
   const st = document.getElementById('stokListe');
   st.innerHTML = d.stok.length ? '' : '<div class="empty">Henüz mal eklenmedi.</div>';
   d.stok.forEach(s=>{
