@@ -362,10 +362,10 @@ function toptanciyaGonder(){
 }
 
 // ---- ÖRNEK VERİ (DEMO) ----
-function demoYukle(){
+function demoYukle(sessiz){
   const eski = db();
   const doluMu = eski.musteriler.length || eski.stok.length || eski.satislar.length;
-  if(doluMu && !confirm('Mevcut verilerin yerine örnek veriler yüklenecek. Önce yedek almanı öneririz. Devam edilsin mi?')) return;
+  if(doluMu && !eski.musteriler.every(m=>m.demo) && !confirm('Mevcut verilerin yerine örnek veriler yüklenecek. Önce yedek almanı öneririz. Devam edilsin mi?')) return;
   let sayac = Date.now();
   const id = ()=>sayac++;
   const d = bos();
@@ -393,7 +393,7 @@ function demoYukle(){
   el('dukkanAdiInput').value = '';
   save(d);
   sekme('musteriler');
-  alert('Örnek veriler yüklendi. Kendi verilerine geçmeden önce Ayarlar > Tüm Verileri Sıfırla ile temizleyebilirsin.');
+  if(!sessiz) alert('Örnek veriler yüklendi. Kendi verilerine geçmeden önce Ayarlar > Tüm Verileri Sıfırla ile temizleyebilirsin.');
 }
 
 function hesapHareketEkle(){
@@ -692,6 +692,13 @@ function render(){
 }
 
 render();
+
+// ?demo linkiyle açılınca örnek veriyi kendiliğinden yükle (her açılışta tarihler bugüne göre tazelenir).
+// Gerçek veri varsa demoYukle yine onay sorar. Adres çubuğundan ?demo silinir ki yenileyince tekrar yüklenmesin.
+if(new URLSearchParams(location.search).has('demo')){
+  demoYukle(true);
+  history.replaceState(null, '', location.pathname);
+}
 </script>
 </body>
 </html>
